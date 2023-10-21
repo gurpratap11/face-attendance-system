@@ -1,15 +1,40 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
-
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import reportWebVitals from "./reportWebVitals";
+import { MantineProvider } from "@mantine/core";
+import { RouterProvider } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "react-query";
+import { ReactQueryDevtools } from "react-query/devtools";
+import { Notifications } from "@mantine/notifications";
+import { router } from "./router/appRoutes";
+import { AuthProvider } from "react-auth-kit";
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { refetchOnWindowFocus: false } },
+});
 const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
+  document.getElementById("root") as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <AuthProvider
+      authType={"cookie"}
+      authName={"_auth"}
+      cookieDomain={window.location.hostname}
+      cookieSecure={window.location.protocol === "https:"}
+    >
+      <MantineProvider
+        withGlobalStyles
+        withNormalizeCSS
+        theme={{ loader: "bars" }}
+      >
+        <Notifications position="top-right" />
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      </MantineProvider>
+    </AuthProvider>
   </React.StrictMode>
 );
 
