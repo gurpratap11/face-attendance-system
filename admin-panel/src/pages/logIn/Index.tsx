@@ -1,5 +1,4 @@
 import {
-  Checkbox,
   Anchor,
   Paper,
   Group,
@@ -70,6 +69,7 @@ const Login = () => {
   const handleLogin = useCallback(
     async (values: TLoginIniValues) => {
       const res = await mutateAsync(values);
+      console.log(res);
       if (
         res.status === "success" &&
         signIn({
@@ -78,6 +78,8 @@ const Login = () => {
         })
       ) {
         navigate("/", { replace: true });
+        console.log(res.data.authState.name);
+        localStorage.setItem("name", res.data.authState.name);
       } else {
         notifications.show({
           color: "red",

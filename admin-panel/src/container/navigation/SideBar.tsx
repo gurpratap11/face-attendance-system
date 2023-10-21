@@ -68,7 +68,7 @@ const Nav = (props: Props) => {
               ></Avatar>
 
               <Box>
-                <Text weight="bold">Kavin Hansen</Text>
+                <Text weight="bold">{localStorage.getItem("name")}</Text>
                 <Text size="sm" weight="bold" color="dimmed">
                   Admin
                 </Text>

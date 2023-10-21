@@ -1,4 +1,4 @@
-import { Button, Modal, createStyles } from "@mantine/core";
+import { Button, FileInput, Modal, createStyles } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
 import { useForm, yupResolver } from "@mantine/form";
 import {
@@ -18,7 +18,7 @@ import InputField from "../../../component/form/input-field/InputField";
 import PasswordField from "../../../component/form/password-field/Index";
 import { useUpdateStudent } from "../../../hooks/students/mutation/updateStudent.mutation";
 import { TStudentValues } from "../../../form/initial-value/addStudent.values";
-
+import { Box, Text } from "@mantine/core";
 export interface IStudentModalRef {
   toggleModal: () => void;
   updateData: (student: TStudentData) => void;
@@ -122,7 +122,12 @@ const StudentModal = (
             getInputProps={getInputProps}
           />
         )}
-
+        <Box style={{ marginTop: "1rem", marginBottom: "1rem" }}>
+          <Text mb={15} style={{ marginBottom: "0.4rem", marginTop: "0.4rem" }}>
+            Upload Photo
+          </Text>
+          <FileInput placeholder="Select File" />
+        </Box>
         <Button
           disabled={addLoading || updateLoading}
           loading={addLoading || updateLoading}

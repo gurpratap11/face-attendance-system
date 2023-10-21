@@ -181,22 +181,6 @@ const HeaderSearch = (props: Props) => {
                 </Box>
               </Menu.Target>
               <Menu.Dropdown className={classes.profileMenu}>
-                <Link to="students" className={classes.profileList}>
-                  <Menu.Item
-                    className={classes.profileListItem}
-                    icon={<IconUser size={20} />}
-                  >
-                    Profile
-                  </Menu.Item>
-                </Link>
-                <Link to="settings" className={classes.profileList}>
-                  <Menu.Item
-                    className={classes.profileListItem}
-                    icon={<IconSettings size={20} />}
-                  >
-                    Settings
-                  </Menu.Item>
-                </Link>
                 <Box className={classes.profileList} onClick={() => signOut()}>
                   <Menu.Item
                     className={classes.profileListItem}
