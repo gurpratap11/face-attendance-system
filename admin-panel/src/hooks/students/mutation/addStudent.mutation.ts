@@ -9,7 +9,9 @@ const AddStudent = async (data: TStudentValues) => {
     url: apiUrls.ADDSTUDENT,
     method: "POST",
     data: data,
+    
   });
+  console.log(data.image)
   return response;
 };
 

@@ -9,6 +9,7 @@ import {
   ForwardedRef,
   useState,
   useEffect,
+  FormEvent,
 } from "react";
 import { notifications } from "@mantine/notifications";
 import { useAddStudentMutation } from "../../../hooks/students/mutation/addStudent.mutation";
@@ -32,6 +33,9 @@ const StudentModal = (
   ref: ForwardedRef<IStudentModalRef>
 ) => {
   const [data, setData] = useState<TStudentData>();
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [photo, setPhoto] = useState<File | null>(null);
   const { reload } = props;
   const [opened, toggle] = useToggle();
   const { classes } = useStyles();
@@ -53,26 +57,31 @@ const StudentModal = (
     }
   }, [setValues, data]);
 
-  const handleFormSubmit = useCallback(
-    async (values: TStudentValues) => {
-      const res = data ? await updateStudent(values) : await addStudent(values);
-      if (res.status === "success") {
-        reload();
-        toggle();
-        reset();
-        notifications.show({
-          color: "green",
-          message: res.message,
-        });
-      } else {
-        notifications.show({
-          color: "red",
-          message: res.data.message,
-        });
-      }
-    },
-    [addStudent, toggle, reload, reset, updateStudent, data]
-  );
+  const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("email", email);
+    if (photo) {
+      formData.append("photo", photo);
+    }
+
+    const response = await fetch("http://192.168.1.210:5000/api/add-student", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (response.status === 200) {
+      console.log("Student added successfully");
+      // Reset form fields here
+      setName("");
+      setEmail("");
+      setPhoto(null);
+    } else {
+      console.error("Failed to add student");
+    }
+  };
   const handelCloseModal = useCallback(() => {
     toggle();
     setData(undefined);
@@ -107,7 +116,7 @@ const StudentModal = (
       title={data ? "Edit Student" : "Add Student"}
       centered
     >
-      <form onSubmit={onSubmit(handleFormSubmit)}>
+      <form onSubmit={handleFormSubmit}>
         <InputField label="Name" name="name" getInputProps={getInputProps} />
         <InputField label="Email" name="email" getInputProps={getInputProps} />
         <InputField
@@ -126,7 +135,7 @@ const StudentModal = (
           <Text mb={15} style={{ marginBottom: "0.4rem", marginTop: "0.4rem" }}>
             Upload Photo
           </Text>
-          <FileInput placeholder="Select File" />
+          <FileInput placeholder="Upoad Photo" />
         </Box>
         <Button
           disabled={addLoading || updateLoading}
