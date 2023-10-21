@@ -10,4 +10,5 @@ type TStudentModel = {
   blocked: boolean;
   verifyEmail: boolean;
   restToken?: string;
+  photo?: any;
 };
