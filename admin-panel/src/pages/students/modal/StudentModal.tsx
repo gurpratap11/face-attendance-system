@@ -1,22 +1,8 @@
-import {
-  Button,
-  FileInput,
-  Modal,
-  createStyles,
-  Box,
-  Text,
-} from "@mantine/core";
+import React, { useCallback, forwardRef, useImperativeHandle, useState, useEffect } from 'react';
+import axios from 'axios';
+import { Button, FileInput, Modal, createStyles, Box, Text } from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
 import { useForm, yupResolver } from "@mantine/form";
-import {
-  memo,
-  useCallback,
-  forwardRef,
-  useImperativeHandle,
-  ForwardedRef,
-  useState,
-  useEffect,
-} from "react";
 import { notifications } from "@mantine/notifications";
 import { useAddStudentMutation } from "../../../hooks/students/mutation/addStudent.mutation";
 import { initialValue } from "../../../form/initial-value";
@@ -25,7 +11,6 @@ import InputField from "../../../component/form/input-field/InputField";
 import PasswordField from "../../../component/form/password-field/Index";
 import { useUpdateStudent } from "../../../hooks/students/mutation/updateStudent.mutation";
 import { TStudentValues } from "../../../form/initial-value/addStudent.values";
-import axios from "axios";
 
 export interface IStudentModalRef {
   toggleModal: () => void;
@@ -38,18 +23,16 @@ interface IStudentModalProps {
 
 const StudentModal = (
   props: IStudentModalProps,
-  ref: ForwardedRef<IStudentModalRef>
+  ref: React.ForwardedRef<IStudentModalRef>
 ) => {
   const [data, setData] = useState<TStudentData>();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { reload } = props;
   const [opened, toggle] = useToggle();
   const { classes } = useStyles();
-  const { isLoading: addLoading, mutateAsync: addStudent } =
-    useAddStudentMutation();
-  const { isLoading: updateLoading, mutateAsync: updateStudent } =
-    useUpdateStudent();
-  const { getInputProps, onSubmit, reset, setValues } = useForm({
+  const { isLoading: addLoading, mutateAsync: addStudent } = useAddStudentMutation();
+  const { isLoading: updateLoading, mutateAsync: updateStudent } = useUpdateStudent();
+  const { getInputProps, onSubmit, reset, setValues } = useForm<TStudentValues>({
     initialValues: initialValue.AddStudentValues,
     validate: yupResolver(validations.addStudent),
     validateInputOnBlur: true,
@@ -65,14 +48,18 @@ const StudentModal = (
   }, [setValues, data]);
 
   const handleFormSubmit = useCallback(
-    async (values: TStudentValues) => {
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+
+      const values = getInputProps();
+
       const formData = new FormData();
       formData.append("name", values.name);
       formData.append("email", values.email);
       formData.append("mobile", values.mobile);
 
       if (selectedFile) {
-        formData.append("photo", selectedFile); // Use the same field name as in your server code
+        formData.append("photo", selectedFile);
       }
 
       if (!data) {
@@ -89,16 +76,17 @@ const StudentModal = (
             },
           }
         );
+
         console.log(response.data);
+
         if (response.data.message === "Student added successfully") {
           reload();
           reset();
-          setSelectedFile(null); // Clear selected file
+          setSelectedFile(null);
           notifications.show({
             color: "green",
             message: response.data.message,
           });
-          toggle();
         } else {
           // Handle error
         }
@@ -125,7 +113,7 @@ const StudentModal = (
   const handleCloseModal = useCallback(() => {
     toggle();
     setData(undefined);
-    setSelectedFile(null); // Clear selected file
+    setSelectedFile(null);
   }, [toggle, setSelectedFile]);
 
   useImperativeHandle(
@@ -155,20 +143,12 @@ const StudentModal = (
       title={data ? "Edit Student" : "Add Student"}
       centered
     >
-      <form onSubmit={onSubmit(handleFormSubmit)}>
+      <form onSubmit={handleFormSubmit}>
         <InputField label="Name" name="name" getInputProps={getInputProps} />
         <InputField label="Email" name="email" getInputProps={getInputProps} />
-        <InputField
-          label="Mobile no."
-          name="mobile"
-          getInputProps={getInputProps}
-        />
+        <InputField label="Mobile no." name="mobile" getInputProps={getInputProps} />
         {!data && (
-          <PasswordField
-            label="Password"
-            name="password"
-            getInputProps={getInputProps}
-          />
+          <PasswordField label="Password" name="password" getInputProps={getInputProps} />
         )}
         <Box style={{ marginTop: "1rem", marginBottom: "1rem" }}>
           <Text mb={15} style={{ marginBottom: "0.4rem", marginTop: "0.4rem" }}>
@@ -200,6 +180,6 @@ const useStyles = createStyles((theme) => ({
       color: "white",
     },
   },
-}));
+});
 
 export default memo(forwardRef(StudentModal));

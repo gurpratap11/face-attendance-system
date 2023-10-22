@@ -9,8 +9,9 @@ const AddStudent = async (data: any) => {
     url: apiUrls.ADDSTUDENT,
     method: "POST",
     data: data,
+    
   });
-  console.log(data)
+  console.log(data.image)
   return response;
 };
 
