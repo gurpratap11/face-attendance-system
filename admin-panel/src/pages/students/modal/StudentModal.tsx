@@ -26,6 +26,7 @@ import PasswordField from "../../../component/form/password-field/Index";
 import { useUpdateStudent } from "../../../hooks/students/mutation/updateStudent.mutation";
 import { TStudentValues } from "../../../form/initial-value/addStudent.values";
 import axios from "axios";
+import { TResetIniValues } from "../../../form/initial-value/Reset.values";
 
 export interface IStudentModalRef {
   toggleModal: () => void;
@@ -63,6 +64,27 @@ const StudentModal = (
       setValues(initialValue.AddStudentValues);
     }
   }, [setValues, data]);
+
+  const mongodbUpdate = useCallback(
+    async (values: TStudentValues) => {
+      const res = data ? await updateStudent(values) : await addStudent(values);
+      if (res.status === "success") {
+        reload();
+        toggle();
+        reset();
+        notifications.show({
+          color: "green",
+          message: res.message,
+        });
+      } else {
+        notifications.show({
+          color: "red",
+          message: res.data.message,
+        });
+      }
+    },
+    [addStudent, toggle, reload, reset, updateStudent, data]
+  );
 
   const handleFormSubmit = useCallback(
     async (values: TStudentValues) => {
@@ -106,6 +128,7 @@ const StudentModal = (
         // Handle error
         console.error("Error adding student:", error);
       }
+      mongodbUpdate(values);
       toggle();
     },
     [toggle, reload, reset, data, selectedFile]

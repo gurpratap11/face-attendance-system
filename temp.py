@@ -6,15 +6,13 @@ import os
 from pymongo import MongoClient
 import pandas as pd
 
+# Your updated MongoDB connection string
+mongo_uri =     "mongodb+srv://gurpratap:gurpratap@attendancecluster.yctfvwb.mongodb.net/?retryWrites=true&w=majority";
 
-# Your MongoDB connection string
-mongo_uri = "mongodb+srv://gurpratap:gurpratap@attendancecluster.yctfvwb.mongodb.net/?retryWrites=true&w=majority"
 
 # Connect to the MongoDB server
 client = MongoClient(mongo_uri)
-db = client[
-    "attendance_database"
-]  # Replace "attendance_database" with your database name
+db = client["attendance_database"]  # Replace "attendance_database" with your database name
 
 # Create or get a collection for attendance
 attendance_collection = db["attendance"]
@@ -24,8 +22,6 @@ excel_file = "attendance.xlsx"
 
 # Check if the attendance Excel file exists, and create it if not (optional)
 if not os.path.exists(excel_file):
-    import pandas as pd
-
     df = pd.DataFrame(columns=["Name", "Date", "Time"])
     df.to_excel(excel_file, index=False)
 else:
