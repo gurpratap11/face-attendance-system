@@ -4,12 +4,13 @@ import { apiUrls } from "../../api-urls";
 
 import { TStudentValues } from "../../../form/initial-value/addStudent.values";
 
-const AddStudent = async (data: TStudentValues) => {
+const AddStudent = async (data: any) => {
   const response: TServerResponse = await request({
     url: apiUrls.ADDSTUDENT,
     method: "POST",
     data: data,
   });
+  console.log(data)
   return response;
 };
 

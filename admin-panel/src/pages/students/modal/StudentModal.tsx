@@ -1,4 +1,11 @@
-import { Button, FileInput, Modal, createStyles } from "@mantine/core";
+import {
+  Button,
+  FileInput,
+  Modal,
+  createStyles,
+  Box,
+  Text,
+} from "@mantine/core";
 import { useToggle } from "@mantine/hooks";
 import { useForm, yupResolver } from "@mantine/form";
 import {
@@ -18,11 +25,12 @@ import InputField from "../../../component/form/input-field/InputField";
 import PasswordField from "../../../component/form/password-field/Index";
 import { useUpdateStudent } from "../../../hooks/students/mutation/updateStudent.mutation";
 import { TStudentValues } from "../../../form/initial-value/addStudent.values";
-import { Box, Text } from "@mantine/core";
+
 export interface IStudentModalRef {
   toggleModal: () => void;
   updateData: (student: TStudentData) => void;
 }
+
 interface IStudentModalProps {
   reload: () => void;
 }
@@ -32,6 +40,7 @@ const StudentModal = (
   ref: ForwardedRef<IStudentModalRef>
 ) => {
   const [data, setData] = useState<TStudentData>();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { reload } = props;
   const [opened, toggle] = useToggle();
   const { classes } = useStyles();
@@ -45,6 +54,7 @@ const StudentModal = (
     validateInputOnBlur: true,
     validateInputOnChange: true,
   });
+
   useEffect(() => {
     if (data) {
       setValues(data);
@@ -55,11 +65,28 @@ const StudentModal = (
 
   const handleFormSubmit = useCallback(
     async (values: TStudentValues) => {
-      const res = data ? await updateStudent(values) : await addStudent(values);
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("email", values.email);
+      formData.append("mobile", values.mobile);
+
+      if (selectedFile) {
+        formData.append("image", selectedFile);
+      }
+
+      if (!data) {
+        formData.append("password", values.password);
+      }
+
+      const res = data
+        ? await updateStudent(formData)
+        : await addStudent(formData);
+
       if (res.status === "success") {
         reload();
         toggle();
         reset();
+        setSelectedFile(null); // Clear selected file
         notifications.show({
           color: "green",
           message: res.message,
@@ -71,22 +98,33 @@ const StudentModal = (
         });
       }
     },
-    [addStudent, toggle, reload, reset, updateStudent, data]
+    [addStudent, toggle, reload, reset, updateStudent, data, selectedFile]
   );
-  const handelCloseModal = useCallback(() => {
+
+  const handleFileChange = useCallback(
+    (file: File | null) => {
+      if (file) {
+        setSelectedFile(file);
+      } else {
+        setSelectedFile(null);
+      }
+    },
+    [setSelectedFile]
+  );
+
+  const handleCloseModal = useCallback(() => {
     toggle();
     setData(undefined);
-  }, [toggle]);
+    setSelectedFile(null); // Clear selected file
+  }, [toggle, setSelectedFile]);
 
   useImperativeHandle(
     ref,
-    () => {
-      return {
-        toggleModal: handelCloseModal,
-        updateData: (d) => setData(d),
-      };
-    },
-    [handelCloseModal]
+    () => ({
+      toggleModal: handleCloseModal,
+      updateData: (d) => setData(d),
+    }),
+    [handleCloseModal]
   );
 
   return (
@@ -98,12 +136,12 @@ const StudentModal = (
           "&:hover": {
             backgroundColor: "#ff008a",
             color: "white",
-            transition: " all 0.2s ease-in-out 0s;",
+            transition: "all 0.2s ease-in-out 0s",
           },
         },
       }}
       opened={opened}
-      onClose={handelCloseModal}
+      onClose={handleCloseModal}
       title={data ? "Edit Student" : "Add Student"}
       centered
     >
@@ -126,7 +164,7 @@ const StudentModal = (
           <Text mb={15} style={{ marginBottom: "0.4rem", marginTop: "0.4rem" }}>
             Upload Photo
           </Text>
-          <FileInput placeholder="Select File" />
+          <FileInput placeholder="Select File" onChange={handleFileChange} />
         </Box>
         <Button
           disabled={addLoading || updateLoading}
@@ -142,6 +180,7 @@ const StudentModal = (
     </Modal>
   );
 };
+
 const useStyles = createStyles((theme) => ({
   btn: {
     background: "#ff008a",

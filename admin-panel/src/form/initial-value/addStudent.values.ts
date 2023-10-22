@@ -4,7 +4,6 @@ export type TStudentValues = {
   email: string;
   rollNumber: string;
   password: string;
-  image: File;
   _id?: string;
 };
 
@@ -14,6 +13,5 @@ export const AddStudentValues: TStudentValues = {
   email: "",
   rollNumber: "",
   password: "",
-  image: new File([], ""),
   _id: "",
 };

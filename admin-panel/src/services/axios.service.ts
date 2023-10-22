@@ -2,7 +2,7 @@ import { showNotification } from "@mantine/notifications";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 import { getCookie } from "./getCookies.service";
 
-const client = axios.create({ baseURL: 'http://192.168.1.210:4000/' });
+const client = axios.create({ baseURL: 'http://localhost:4000/' });
 
 export const request = async (options: AxiosRequestConfig<any>) => {
   const token = getCookie("_auth");
