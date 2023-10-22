@@ -25,6 +25,7 @@ import InputField from "../../../component/form/input-field/InputField";
 import PasswordField from "../../../component/form/password-field/Index";
 import { useUpdateStudent } from "../../../hooks/students/mutation/updateStudent.mutation";
 import { TStudentValues } from "../../../form/initial-value/addStudent.values";
+import axios from "axios";
 
 export interface IStudentModalRef {
   toggleModal: () => void;
@@ -71,34 +72,43 @@ const StudentModal = (
       formData.append("mobile", values.mobile);
 
       if (selectedFile) {
-        formData.append("image", selectedFile);
+        formData.append("photo", selectedFile); // Use the same field name as in your server code
       }
 
       if (!data) {
         formData.append("password", values.password);
       }
 
-      const res = data
-        ? await updateStudent(formData)
-        : await addStudent(formData);
-
-      if (res.status === "success") {
-        reload();
-        toggle();
-        reset();
-        setSelectedFile(null); // Clear selected file
-        notifications.show({
-          color: "green",
-          message: res.message,
-        });
-      } else {
-        notifications.show({
-          color: "red",
-          message: res.data.message,
-        });
+      try {
+        const response = await axios.post(
+          "http://localhost:5000/api/add-student",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+        console.log(response.data);
+        if (response.data.message === "Student added successfully") {
+          reload();
+          reset();
+          setSelectedFile(null); // Clear selected file
+          notifications.show({
+            color: "green",
+            message: response.data.message,
+          });
+          toggle();
+        } else {
+          // Handle error
+        }
+      } catch (error) {
+        // Handle error
+        console.error("Error adding student:", error);
       }
+      toggle();
     },
-    [addStudent, toggle, reload, reset, updateStudent, data, selectedFile]
+    [toggle, reload, reset, data, selectedFile]
   );
 
   const handleFileChange = useCallback(
