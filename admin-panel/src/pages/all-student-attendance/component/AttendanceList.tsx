@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { useGetAllStudentAttendance } from "../../../hooks/all-student-attendance/query/useAllStudentAttendance.query";
 import { CONSTANTS } from "../../../constant";
 import { useMemo, useState } from "react";
-import { totalTime } from "../../../utils/attendance/totalTime";
 import moment from "moment";
 import ThemeLoader from "../../../component/loader/ThemeLoader";
 const AttendanceList = () => {
@@ -21,6 +20,7 @@ const AttendanceList = () => {
       page: activePage,
     },
   });
+  console.log(data);
 
   const attendance: TAttendanceData[] = useMemo(() => {
     if (!isLoading && data) {
@@ -50,17 +50,12 @@ const AttendanceList = () => {
             >
               <Box className={classes.detailsContainer} p={0} m={0}>
                 <Text weight={600} size="sm" c="#ff008a">
-                  {item.name}
+                  {item.Name}
                 </Text>
               </Box>
               <Box className={classes.detailsContainer} p={0} m={0}>
                 <Text weight={600} size="sm">
                   {moment(item.createdAt).format("DD-MMM-YYYY ")}
-                </Text>
-
-                <Text weight={500} size="sm" c="dimmed">
-                  Total Hours :
-                  {item.outTime ? totalTime(item.inTime, item.outTime) : " ---"}
                 </Text>
               </Box>
               <Box className={classes.detailsContainer}>
@@ -68,18 +63,10 @@ const AttendanceList = () => {
                   In
                 </Text>
                 <Text weight={500} size="sm">
-                  {item.inTime ? moment(item.inTime).format("LT") : "---"}
+                  {item.InTime}
                 </Text>
               </Box>
-              <Box className={classes.detailsContainer}>
-                <Text weight={600} size="sm" c="dimmed">
-                  Out
-                </Text>
 
-                <Text weight={500} size="sm">
-                  {item.outTime ? moment(item.outTime).format("LT") : "---"}
-                </Text>
-              </Box>
               <Box className={classes.detailsContainer} w={70}>
                 <Text weight={600} size="sm" c="dimmed">
                   Status
@@ -88,22 +75,14 @@ const AttendanceList = () => {
                   weight={500}
                   size="sm"
                   color={
-                    item.status === "on time"
+                    item.Status === "on time"
                       ? "#009900"
-                      : item.status === "late"
+                      : item.Status === "late"
                       ? "#f79009"
                       : "#FF0000"
                   }
                 >
-                  {item.status}
-                </Text>
-              </Box>
-              <Box w="15rem" className={classes.detailsContainer}>
-                <Text weight={600} size="sm" c="dimmed">
-                  Note
-                </Text>
-                <Text weight={500} size="sm">
-                  {item.notes ? item.notes : "---"}
+                  {item.Status}
                 </Text>
               </Box>
             </Flex>
@@ -111,7 +90,7 @@ const AttendanceList = () => {
           <IconExternalLink
             className={classes.moreIcon}
             size={20}
-            onClick={() => navigate("/attendance/" + item.studentID)}
+            onClick={() => navigate("/attendance/" + item.StudentId)}
             cursor={10}
           />
         </Flex>
@@ -148,7 +127,7 @@ const useStyles = createStyles((theme) => ({
   detailsContainer: {
     marginInline: "1rem",
     flexGrow: 1,
-    width: "8rem",
+    width: "12rem",
   },
 
   mainBox: {

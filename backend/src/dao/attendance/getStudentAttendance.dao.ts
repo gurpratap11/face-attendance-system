@@ -6,19 +6,19 @@ import moment from "moment";
 
 interface IGetRequestParams {
   paging: TPaging;
-  studentId: string;
+  StudentId: string;
   date?: string;
 }
 const aggregationArray = (param: IGetRequestParams): PipelineStage[] => {
   const stages: PipelineStage[] = [];
-  const { date, studentId } = param;
+  const { date, StudentId } = param;
   const currentDate = moment();
   const startOfMonth = currentDate.startOf("month").toDate();
   const endOfMonth = currentDate.endOf("month").toDate();
 
   stages.push({
     $match: {
-      studentID: new ObjectId(studentId),
+      StudentId: new ObjectId(StudentId),
       createdAt: {
         $gte: startOfMonth,
         $lte: endOfMonth,

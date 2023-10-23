@@ -6,23 +6,23 @@ import os
 from pymongo import MongoClient
 import pandas as pd
 
-# Your updated MongoDB connection string
-mongo_uri =     "mongodb+srv://gurpratap:gurpratap@attendancecluster.yctfvwb.mongodb.net/?retryWrites=true&w=majority";
-
+# Your MongoDB connection string
+mongo_uri = "mongodb+srv://gurpratap:gurpratap@attendancecluster.yctfvwb.mongodb.net/?retryWrites=true&w=majority"
 
 # Connect to the MongoDB server
 client = MongoClient(mongo_uri)
-db = client["attendance_database"]  # Replace "attendance_database" with your database name
+db = client["test"]  # Replace "attendance_database" with your database name
 
 # Create or get a collection for attendance
-attendance_collection = db["attendance"]
+attendance_collection = db["attendance-sheets"]
+student_users_collection = db["student-users"]
 
 # Excel file for backup (optional)
 excel_file = "attendance.xlsx"
 
 # Check if the attendance Excel file exists, and create it if not (optional)
 if not os.path.exists(excel_file):
-    df = pd.DataFrame(columns=["Name", "Date", "Time"])
+    df = pd.DataFrame(columns=["Name", "Date", "InTime"])
     df.to_excel(excel_file, index=False)
 else:
     df = pd.read_excel(excel_file)
@@ -51,7 +51,7 @@ for student_image_filename in os.listdir(students_directory):
         known_face_names.append(student_name)
 
 # Create a dictionary to keep track of students' attendance
-attendance_record = {name: False for name in known_face_names}
+attendance_record = {name: {"status": "absent", "date": None, "inTime": None} for name in known_face_names}
 
 while True:
     _, frame = video_capture.read()
@@ -61,6 +61,9 @@ while True:
     face_locations = face_recognition.face_locations(rgb_small_frame)
     face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
     face_names = []
+
+    current_time = datetime.now().time()
+    current_date = datetime.now().date()
 
     for face_encoding in face_encodings:
         matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
@@ -73,33 +76,59 @@ while True:
 
         face_names.append(name)
 
-        if name != "Unknown" and not attendance_record[name]:
-            current_date = datetime.now().strftime("%Y-%m-%d")
-            current_time = datetime.now().strftime("%H:%M:%S")
+        if name != "Unknown" and attendance_record[name]["status"] == "absent":
+            # Check current time and set the status
+            if current_time <= datetime.strptime("10:00", "%H:%M").time():
+                status = "on time"
+            elif current_time >= datetime.strptime("12:00", "%H:%M").time():
+                status = "late"
+            else:
+                status = "absent"
 
-            # Mark attendance and update the record
-            attendance_record[name] = True
+            # Convert the date to a string
+            current_date_str = current_date.strftime("%Y-%m-%d")
+
+            attendance_record[name] = {
+                "status": status,
+                "date": current_date_str,
+                "inTime": current_time.strftime("%H:%M"),
+            }
 
             # Check if the student is not already marked present in the MongoDB collection
             existing_attendance = attendance_collection.find_one(
-                {"Name": name, "Date": current_date}
+                {"Name": name, "Date": current_date_str}
             )
 
             if not existing_attendance:
-                # Create a new attendance document
-                new_attendance = {
-                    "Name": name,
-                    "Date": current_date,
-                    "Time": current_time,
-                }
+                # Attempt to fetch student details from the student_users_collection
+                studentDetails = student_users_collection.find_one({"name": name.replace("-", " ")})
+                print(studentDetails)
+                if studentDetails:
+                    new_attendance = {
+                        "StudentId": studentDetails.get("_id"),  # Provide a default value if "email" is not found
+                        "Name": name,
+                        "Date": current_date_str,
+                        "InTime": current_time.strftime("%H:%M"),
+                        "Status": status,
+                        "createdAt": datetime.now()
+                    },
+                    new_attendance = {
+                        "StudentId": studentDetails.get("_id"),  #,  # Provide a default value if student details are not found
+                        "Name": name,
+                        "Date": current_date_str,
+                        "InTime": current_time.strftime("%H:%M"),
+                        "Status": status,
+                        "createdAt": datetime.now()
+
+                    }
 
                 # Insert the attendance document into the MongoDB collection
                 attendance_collection.insert_one(new_attendance)
 
             # Optional: Save the attendance data to an Excel file for backup
-            if not ((df["Name"] == name) & (df["Date"] == current_date)).any():
+            if not ((df["Name"] == name) & (df["Date"] == current_date_str)).any():
                 # Append attendance data to the DataFrame
-                new_row = {"Name": name, "Date": current_date, "Time": current_time}
+                new_row = {"Name": name, "Date": current_date_str, "InTime": current_time.strftime("%H:%M")}
                 df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
                 df.to_excel(excel_file, index=False)
 

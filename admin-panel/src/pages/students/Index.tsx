@@ -14,7 +14,7 @@ const Students = () => {
   const [search, setSearch] = useState("");
   const [activePage, setActivePage] = useState(1);
   const [pagedData, setPagedData] = useState({
-    total: 0,
+    total: 10,
   });
   const { refetch, data, isLoading } = useGetAllStudent({
     paging: {
@@ -25,8 +25,8 @@ const Students = () => {
       search,
     },
   });
-
-  const students: TStudentData[] = useMemo(() => {
+  console.log(data);
+  const students = useMemo(() => {
     if (!isLoading && data) {
       setPagedData(data.pageData);
       return data.data;
@@ -38,7 +38,7 @@ const Students = () => {
   tableColumns.push({
     header: "Edit Student",
     key: "editStudent",
-    renderCell: (row: TStudentData) => (
+    renderCell: (row) => (
       <ActionIcon
         onClick={() => {
           modalRef.current?.toggleModal();
@@ -59,7 +59,7 @@ const Students = () => {
         data={students}
         paginationProps={{
           setPage: setActivePage,
-          totalPages: pagedData.total,
+          totalPages: pagedData.total || 0, // Add a default value of 0 if pagedData.total is undefined
         }}
         headerProps={{
           search: true,

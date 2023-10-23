@@ -4,14 +4,14 @@ import { dao } from "../../../dao";
 
 export const studentAttendance = async (req: Request, res: Response) => {
   try {
-    const studentId = req.query.studentId as string;
+    const StudentId = req.query.StudentId as string;
     const { data, pageData } = await dao.attendance.getStudentAttendance({
       paging: {
         page: Number(req.query.page),
         itemPerPage: Number(req.query.itemPerPage),
       },
       date: req.query.date as string,
-      studentId: studentId,
+      StudentId: StudentId,
     });
 
     return JsonResponse(res, {
@@ -22,7 +22,7 @@ export const studentAttendance = async (req: Request, res: Response) => {
       data: data,
       pageData: pageData,
       extraData: await dao.attendance.getStudentAttendanceDetails({
-        studentId,
+        StudentId,
       }),
     });
   } catch (error: any) {

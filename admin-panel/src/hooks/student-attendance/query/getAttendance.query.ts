@@ -9,7 +9,7 @@ const getStudentAttendance = async (params: TStudentAttendanceParams) => {
     params: {
       ...params.paging,
       date: params.date,
-      studentId: params.studentId,
+      StudentId: params.studentId,
     },
   });
   return response;

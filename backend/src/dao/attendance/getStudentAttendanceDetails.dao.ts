@@ -5,12 +5,12 @@ import { ObjectId } from "mongodb";
 import moment from "moment";
 
 interface IGetRequestParams {
-  studentId: string;
+  StudentId: string;
 }
 
 const aggregationArray = (params: IGetRequestParams): PipelineStage[] => {
   const aggregate: PipelineStage[] = [];
-  const { studentId } = params;
+  const { StudentId } = params;
 
   const currentDate = moment();
   const startOfMonth = currentDate.startOf("month").toDate();
@@ -18,7 +18,7 @@ const aggregationArray = (params: IGetRequestParams): PipelineStage[] => {
 
   aggregate.push({
     $match: {
-      studentID: new ObjectId(studentId),
+      studentID: new ObjectId(StudentId),
       createdAt: {
         $gte: startOfMonth,
         $lte: endOfMonth,

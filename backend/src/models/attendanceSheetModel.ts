@@ -30,7 +30,7 @@ const AttendanceSheetSchema = new Schema<TAttendanceSheet>(
 );
 
 const AttendanceSheetModel: Model<TAttendanceSheet> = model(
-  "attendance-sheet",
+  "attendance-sheets",
   AttendanceSheetSchema
 );
 

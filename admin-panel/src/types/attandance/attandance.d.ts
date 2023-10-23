@@ -1,9 +1,10 @@
 type TAttendanceData = {
-  studentID?: ObjectId;
-  name: string;
-  inTime: Date;
+  StudentId: ObjectId;
+  Name: string;
+  Date: string;
+  InTime: string;
   outTime: Date;
   notes?: string;
-  status: string;
+  Status: string;
   createdAt: Date;
 };

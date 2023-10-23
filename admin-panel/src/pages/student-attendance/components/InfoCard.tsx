@@ -22,11 +22,13 @@ import Header from "./Header";
 const InfoCard = () => {
   const { classes } = useStyles();
   let { userId } = useParams();
+  console.log(userId);
   const [activePage, setActivePage] = useState(1);
   const [pagedData, setPagedData] = useState({
     total: 0,
   });
   const [queryDate, setQueryDate] = useState<Date | null>(null);
+  console.log("queryDate", queryDate);
   const { refetch, data, isLoading } = useGetStudentAttendance({
     paging: {
       itemPerPage: CONSTANTS.PAGE_LIMIT,
@@ -35,10 +37,13 @@ const InfoCard = () => {
     date: queryDate,
     studentId: userId,
   });
+  console.log("studentId", userId);
+  console.log("studentAttendance", data);
+
   useEffect(() => {
     refetch();
   }, [queryDate, refetch]);
-
+  console.log(data);
   const attendance: TAttendanceData[] = useMemo(() => {
     if (!isLoading && data) {
       setPagedData(data.pageData);
@@ -47,19 +52,21 @@ const InfoCard = () => {
       return [];
     }
   }, [isLoading, data]);
+  console.log("extra data", data?.extraData);
+
   if (isLoading) {
     return <ThemeLoader loading={isLoading} />;
   }
-
+  console.log(attendance);
   const features = attendance.map((item) => (
     <Card
-      key={item.studentID}
+      key={item.StudentId}
       shadow="md"
       radius="md"
       className={
-        item.status === "absent"
+        item.Status === "absent"
           ? `${classes.card} ${classes.cardAbsent}`
-          : item.status === "on time"
+          : item.Status === "on time"
           ? `${classes.card} ${classes.cardOnTime}`
           : `${classes.card} ${classes.cardLate}`
       }
@@ -71,9 +78,9 @@ const InfoCard = () => {
         </Text>
         <Box
           className={
-            item.status === "absent"
+            item.Status === "absent"
               ? `${classes.statusBox} ${classes.statusBoxAbsent}`
-              : item.status === "on time"
+              : item.Status === "on time"
               ? `${classes.statusBox} ${classes.statusBoxOnTime}`
               : `${classes.statusBox} ${classes.statusBoxLate}`
           }
@@ -83,14 +90,14 @@ const InfoCard = () => {
               inline
               size={8}
               position="middle-start"
-              {...(item.status === "absent"
+              {...(item.Status === "absent"
                 ? { color: "#FF0000" }
-                : item.status === "on time"
+                : item.Status === "on time"
                 ? { color: "#53b1fd" }
                 : { color: "#f79009" })}
             >
               <Text ml={10} size="xs" weight={500}>
-                {item.status}
+                {item.Status}
               </Text>
             </Indicator>
           </Center>
@@ -109,7 +116,7 @@ const InfoCard = () => {
             Check In
           </Text>
           <Text fz="sm" weight={500}>
-            {item.inTime ? moment(item.inTime).format("LT") : "---"}
+            {item.InTime ? item.InTime : "---"}
           </Text>
         </Box>
         <Box>
@@ -125,7 +132,7 @@ const InfoCard = () => {
             Total
           </Text>
           <Text fz="sm" weight={500}>
-            {item.outTime ? totalTime(item.inTime, item.outTime) : "---"}
+            {/* {item.outTime ? totalTime(item.Time, item.outTime) : "---"} */}
           </Text>
         </Box>
       </Group>
