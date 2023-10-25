@@ -13,13 +13,13 @@ const aggregationArray = (params: IGetRequestParams): PipelineStage[] => {
   const { StudentId } = params;
 
   const currentDate = moment();
-  const startOfMonth = currentDate.startOf("month").toDate();
-  const endOfMonth = currentDate.endOf("month").toDate();
+  const startOfMonth = currentDate.startOf("month").format("YYYY-MM-DD");
+  const endOfMonth = currentDate.endOf("month").format("YYYY-MM-DD");
 
   aggregate.push({
     $match: {
-      studentID: new ObjectId(StudentId),
-      createdAt: {
+      StudentId: new ObjectId(StudentId), // Match StudentId as an ObjectId
+      Date: {
         $gte: startOfMonth,
         $lte: endOfMonth,
       },
@@ -28,7 +28,7 @@ const aggregationArray = (params: IGetRequestParams): PipelineStage[] => {
 
   aggregate.push({
     $group: {
-      _id: "$studentID",
+      _id: "$StudentId",
       totalAttendance: {
         $sum: 1,
       },
@@ -36,7 +36,7 @@ const aggregationArray = (params: IGetRequestParams): PipelineStage[] => {
         $sum: {
           $cond: [
             {
-              $eq: ["$status", "on time"],
+              $eq: ["$Status", "late"], // Change "on time" to "late"
             },
             1,
             0,
@@ -47,7 +47,7 @@ const aggregationArray = (params: IGetRequestParams): PipelineStage[] => {
         $sum: {
           $cond: [
             {
-              $eq: ["$status", "absent"],
+              $eq: ["$Status", "absent"],
             },
             1,
             0,
@@ -58,7 +58,7 @@ const aggregationArray = (params: IGetRequestParams): PipelineStage[] => {
         $sum: {
           $cond: [
             {
-              $eq: ["$status", "late"],
+              $eq: ["$Status", "late"],
             },
             1,
             0,
@@ -67,12 +67,13 @@ const aggregationArray = (params: IGetRequestParams): PipelineStage[] => {
       },
     },
   });
+
   aggregate.push(
     {
       $lookup: {
         from: "student-users",
         localField: "_id",
-        foreignField: "_id",
+        foreignField: "StudentId",
         as: "student",
       },
     },
@@ -83,19 +84,14 @@ const aggregationArray = (params: IGetRequestParams): PipelineStage[] => {
       },
     }
   );
-  aggregate.push({
-    $unwind: {
-      path: "$student",
-      preserveNullAndEmptyArrays: true,
-    },
-  });
+
   aggregate.push({
     $project: {
       totalAttendance: 1,
       onTimeCount: 1,
       absentCount: 1,
       lateCount: 1,
-      name: "$student.name",
+      name: "$student.Name",
       email: "$student.email",
     },
   });
@@ -112,10 +108,22 @@ export const getStudentAttendanceDetails = async (
   let { totalAttendance, onTimeCount, absentCount, lateCount, name, email } =
     attendanceData;
 
+  // Check if totalAttendance is zero to avoid division by zero
+  if (totalAttendance === 0) {
+    return {
+      totalAttendance,
+      percentageOnTime: 0,
+      percentageAbsent: 0,
+      percentageLate: 0,
+      name,
+      email,
+    };
+  }
+
   const percentageOnTime = (onTimeCount / totalAttendance) * 100;
   const percentageAbsent = (absentCount / totalAttendance) * 100;
   const percentageLate = (lateCount / totalAttendance) * 100;
-  totalAttendance = onTimeCount + lateCount;
+
   return {
     totalAttendance,
     percentageOnTime,
