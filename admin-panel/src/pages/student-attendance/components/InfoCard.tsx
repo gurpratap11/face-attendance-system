@@ -119,14 +119,7 @@ const InfoCard = () => {
             {item.InTime ? item.InTime : "---"}
           </Text>
         </Box>
-        <Box>
-          <Text c="dimmed" weight={500} size="xs">
-            Check Out
-          </Text>
-          <Text fz="sm" weight={500}>
-            {item.outTime ? moment(item.outTime).format("LT") : "---"}
-          </Text>
-        </Box>
+
         <Box>
           <Text c="dimmed" weight={500} size="xs">
             Total
