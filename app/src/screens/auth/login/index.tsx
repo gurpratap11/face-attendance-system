@@ -42,7 +42,7 @@ const LoginScreen = () => {
         });
         return;
       }
-      if (res.statusCode === 200) {
+      if (res.status === 'success') {
         reset();
         AsyncStorage.setItem(`${Config.REACT_APP_SECRET_KEY}`, res.data.token);
         refetch();
